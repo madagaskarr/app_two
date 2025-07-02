@@ -1,28 +1,40 @@
 package io.tigranes.app_two.ui.screens.editor
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.tigranes.app_two.data.filter.FilterType
+import io.tigranes.app_two.data.preferences.PreferencesManager
+import io.tigranes.app_two.data.preferences.RecentEdit
 import io.tigranes.app_two.domain.usecase.ApplyFilterUseCase
 import io.tigranes.app_two.domain.usecase.LoadImageUseCase
 import io.tigranes.app_two.domain.usecase.SaveImageUseCase
 import io.tigranes.app_two.ui.base.BaseViewModel
 import io.tigranes.app_two.util.Constants
+import io.tigranes.app_two.util.FileUtils
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val savedStateHandle: SavedStateHandle,
     private val loadImageUseCase: LoadImageUseCase,
     private val saveImageUseCase: SaveImageUseCase,
-    private val applyFilterUseCase: ApplyFilterUseCase
+    private val applyFilterUseCase: ApplyFilterUseCase,
+    private val preferencesManager: PreferencesManager
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState())
@@ -134,6 +146,20 @@ class EditorViewModel @Inject constructor(
                         isSaving = false,
                         savedImageUri = uri
                     )
+                    
+                    // Save to recent edits
+                    val currentFilter = _uiState.value.selectedFilterIndex
+                    if (currentFilter >= 0) {
+                        val filterType = FilterType.values()[currentFilter]
+                        val filterName = getFilterDisplayName(filterType)
+                        preferencesManager.saveRecentEdit(
+                            RecentEdit(
+                                imageUri = uri.toString(),
+                                filterId = currentFilter,
+                                filterName = filterName
+                            )
+                        )
+                    }
                 },
                 onFailure = { error ->
                     _uiState.value = _uiState.value.copy(
@@ -143,6 +169,47 @@ class EditorViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    suspend fun prepareImageForSharing(): Uri? = withContext(Dispatchers.IO) {
+        try {
+            val bitmap = _uiState.value.currentBitmap ?: return@withContext null
+            
+            // Create a temporary file for sharing
+            val shareDir = File(context.cacheDir, "shared_images")
+            shareDir.mkdirs()
+            
+            val shareFile = File(shareDir, "shared_image_${System.currentTimeMillis()}.jpg")
+            
+            FileOutputStream(shareFile).use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, Constants.IMAGE_COMPRESS_QUALITY, outputStream)
+            }
+            
+            // Get URI using FileProvider
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                shareFile
+            )
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(error = "Failed to prepare image for sharing")
+            null
+        }
+    }
+    
+    private fun getFilterDisplayName(filterType: FilterType): String = when (filterType) {
+        FilterType.VINTAGE -> "Vintage"
+        FilterType.WARM_SUNSET -> "Warm Sunset"
+        FilterType.COOL_BREEZE -> "Cool Breeze"
+        FilterType.BLACK_WHITE_CLASSIC -> "B&W Classic"
+        FilterType.CINEMATIC_TEAL_ORANGE -> "Cinematic"
+        FilterType.HIGH_CONTRAST_MONO -> "High Contrast"
+        FilterType.PASTEL_DREAM -> "Pastel Dream"
+        FilterType.RETRO_FILM -> "Retro Film"
+        FilterType.HDR_POP -> "HDR Pop"
+        FilterType.SEPIA_FADE -> "Sepia Fade"
+        FilterType.CYBERPUNK_NEON -> "Cyberpunk"
+        FilterType.SOFT_MATTE -> "Soft Matte"
     }
 }
 

@@ -81,6 +81,9 @@ dependencies {
 
     // Accompanist
     implementation(libs.accompanist.permissions)
+    
+    // Gson for JSON serialization
+    implementation(libs.gson)
 
     // Testing
     testImplementation(libs.junit)

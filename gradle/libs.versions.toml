@@ -20,6 +20,7 @@ detekt = "1.23.3"
 junit5 = "5.10.0"
 turbine = "1.0.0"
 accompanist = "0.32.0"
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ junit5-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", 
 junit5-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
