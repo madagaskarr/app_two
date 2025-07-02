@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.tigranes.app_two.data.filter.FilterType
+import io.tigranes.app_two.domain.usecase.ApplyFilterUseCase
 import io.tigranes.app_two.domain.usecase.LoadImageUseCase
 import io.tigranes.app_two.domain.usecase.SaveImageUseCase
 import io.tigranes.app_two.ui.base.BaseViewModel
@@ -19,7 +21,8 @@ import javax.inject.Inject
 class EditorViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val loadImageUseCase: LoadImageUseCase,
-    private val saveImageUseCase: SaveImageUseCase
+    private val saveImageUseCase: SaveImageUseCase,
+    private val applyFilterUseCase: ApplyFilterUseCase
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState())
@@ -60,17 +63,45 @@ class EditorViewModel @Inject constructor(
     }
 
     fun applyFilter(filterIndex: Int) {
-        _uiState.value = _uiState.value.copy(
-            selectedFilterIndex = filterIndex,
-            isApplyingFilter = true
-        )
+        val originalBitmap = _uiState.value.originalBitmap ?: return
         
-        // TODO: Apply filter using GPUImage
-        // For now, just use the original bitmap
-        _uiState.value = _uiState.value.copy(
-            currentBitmap = _uiState.value.originalBitmap,
-            isApplyingFilter = false
-        )
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                selectedFilterIndex = filterIndex,
+                isApplyingFilter = true
+            )
+            
+            try {
+                val filterType = FilterType.values()[filterIndex]
+                val intensity = _uiState.value.filterIntensity
+                
+                applyFilterUseCase(
+                    ApplyFilterUseCase.Params(
+                        bitmap = originalBitmap,
+                        filterType = filterType,
+                        intensity = intensity
+                    )
+                ).fold(
+                    onSuccess = { filteredBitmap ->
+                        _uiState.value = _uiState.value.copy(
+                            currentBitmap = filteredBitmap,
+                            isApplyingFilter = false
+                        )
+                    },
+                    onFailure = { error ->
+                        _uiState.value = _uiState.value.copy(
+                            isApplyingFilter = false,
+                            error = error.message
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isApplyingFilter = false,
+                    error = e.message
+                )
+            }
+        }
     }
 
     fun updateFilterIntensity(intensity: Float) {
