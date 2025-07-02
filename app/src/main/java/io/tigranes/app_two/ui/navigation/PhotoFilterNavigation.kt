@@ -4,7 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import io.tigranes.app_two.ui.screens.CameraScreen
+import io.tigranes.app_two.ui.screens.EditorScreen
 import io.tigranes.app_two.ui.screens.HomeScreen
 
 @Composable
@@ -16,15 +20,28 @@ fun PhotoFilterNavigation(
         startDestination = PhotoFilterScreen.Home.route
     ) {
         composable(route = PhotoFilterScreen.Home.route) {
-            HomeScreen()
+            HomeScreen(navController = navController)
         }
         
         composable(route = PhotoFilterScreen.Camera.route) {
-            // CameraScreen will be implemented later
+            CameraScreen(navController = navController)
         }
         
-        composable(route = PhotoFilterScreen.Editor.route) {
-            // EditorScreen will be implemented later
+        composable(
+            route = PhotoFilterScreen.Editor.route + "?imageUri={imageUri}",
+            arguments = listOf(
+                navArgument("imageUri") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val imageUriString = backStackEntry.arguments?.getString("imageUri")
+            val imageUri = imageUriString?.let { android.net.Uri.parse(it) }
+            EditorScreen(
+                navController = navController,
+                imageUri = imageUri
+            )
         }
     }
 }

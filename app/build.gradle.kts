@@ -78,6 +78,9 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
     
+    // Accompanist
+    implementation(libs.accompanist.permissions)
+    
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.junit5.jupiter.api)
