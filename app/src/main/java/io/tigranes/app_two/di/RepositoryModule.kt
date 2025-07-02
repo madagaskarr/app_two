@@ -1,11 +1,20 @@
 package io.tigranes.app_two.di
 
+import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.tigranes.app_two.data.repository.ImageRepository
+import io.tigranes.app_two.data.repository.ImageRepositoryImpl
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-    // Repository bindings will be added here as we create them
+    
+    @Binds
+    @Singleton
+    abstract fun bindImageRepository(
+        imageRepositoryImpl: ImageRepositoryImpl
+    ): ImageRepository
 }

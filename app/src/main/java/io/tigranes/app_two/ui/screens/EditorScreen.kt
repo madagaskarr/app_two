@@ -1,7 +1,5 @@
 package io.tigranes.app_two.ui.screens
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,13 +35,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,43 +46,32 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.tigranes.app_two.util.Constants
-import io.tigranes.app_two.util.FileUtils
+import io.tigranes.app_two.ui.navigation.PhotoFilterScreen
+import io.tigranes.app_two.ui.screens.editor.EditorViewModel
 import io.tigranes.app_two.util.showToast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.InputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreen(
     navController: NavController,
-    imageUri: Uri?
+    imageUri: Uri?,
+    viewModel: EditorViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsState()
     
-    var originalBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var processedBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var selectedFilterIndex by remember { mutableIntStateOf(-1) }
-    var filterIntensity by remember { mutableFloatStateOf(Constants.DEFAULT_FILTER_INTENSITY.toFloat()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var isSaving by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.savedImageUri) {
+        uiState.savedImageUri?.let {
+            context.showToast("Image saved successfully!")
+            navController.popBackStack(PhotoFilterScreen.Home.route, false)
+        }
+    }
     
-    LaunchedEffect(imageUri) {
-        imageUri?.let { uri ->
-            withContext(Dispatchers.IO) {
-                try {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        originalBitmap = BitmapFactory.decodeStream(inputStream)
-                        processedBitmap = originalBitmap
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            context.showToast(it)
         }
     }
     
@@ -108,26 +90,12 @@ fun EditorScreen(
             )
         },
         floatingActionButton = {
-            if (processedBitmap != null) {
+            if (uiState.currentBitmap != null) {
                 FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            isSaving = true
-                            processedBitmap?.let { bitmap ->
-                                val savedUri = FileUtils.saveImageToGallery(context, bitmap)
-                                isSaving = false
-                                if (savedUri != null) {
-                                    context.showToast("Image saved successfully!")
-                                    navController.popBackStack(PhotoFilterScreen.Home.route, false)
-                                } else {
-                                    context.showToast("Failed to save image")
-                                }
-                            }
-                        }
-                    },
+                    onClick = { viewModel.saveImage() },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    if (isSaving) {
+                    if (uiState.isSaving) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary
@@ -152,7 +120,7 @@ fun EditorScreen(
                     .background(Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                processedBitmap?.let { bitmap ->
+                uiState.currentBitmap?.let { bitmap ->
                     Image(
                         bitmap = bitmap.asImageBitmap(),
                         contentDescription = "Edited image",
@@ -163,7 +131,7 @@ fun EditorScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
                 
-                if (isLoading) {
+                if (uiState.isLoading || uiState.isApplyingFilter) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -176,25 +144,23 @@ fun EditorScreen(
             }
             
             // Filter intensity slider
-            if (selectedFilterIndex >= 0) {
+            if (uiState.selectedFilterIndex >= 0) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Intensity: ${filterIntensity.toInt()}%",
+                        text = "Intensity: ${uiState.filterIntensity.toInt()}%",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
                     Slider(
-                        value = filterIntensity,
+                        value = uiState.filterIntensity,
                         onValueChange = { intensity ->
-                            filterIntensity = intensity
-                            // Apply filter with new intensity
-                            applyFilter(selectedFilterIndex, intensity)
+                            viewModel.updateFilterIntensity(intensity)
                         },
-                        valueRange = Constants.MIN_FILTER_INTENSITY.toFloat()..Constants.MAX_FILTER_INTENSITY.toFloat(),
+                        valueRange = 0f..100f,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -213,10 +179,9 @@ fun EditorScreen(
                 // Original
                 FilterItem(
                     name = "Original",
-                    isSelected = selectedFilterIndex == -1,
+                    isSelected = uiState.selectedFilterIndex == -1,
                     onClick = {
-                        selectedFilterIndex = -1
-                        processedBitmap = originalBitmap
+                        viewModel.resetToOriginal()
                     }
                 )
                 
@@ -224,10 +189,9 @@ fun EditorScreen(
                 filters.forEachIndexed { index, filter ->
                     FilterItem(
                         name = filter,
-                        isSelected = selectedFilterIndex == index,
+                        isSelected = uiState.selectedFilterIndex == index,
                         onClick = {
-                            selectedFilterIndex = index
-                            applyFilter(index, filterIntensity)
+                            viewModel.applyFilter(index)
                         }
                     )
                 }
@@ -274,11 +238,6 @@ private fun FilterItem(
             )
         }
     }
-}
-
-// Placeholder for filter application - will be implemented with GPUImage
-private fun applyFilter(filterIndex: Int, intensity: Float) {
-    // TODO: Implement filter application with GPUImage
 }
 
 private val filters = listOf(
