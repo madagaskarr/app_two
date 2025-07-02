@@ -2,8 +2,8 @@ package io.tigranes.app_two.domain.usecase
 
 import android.graphics.Bitmap
 import io.tigranes.app_two.data.filter.FilterManager
+import io.tigranes.app_two.data.filter.FilterType
 import io.tigranes.app_two.domain.base.BaseUseCase
-import io.tigranes.app_two.domain.model.FilterType
 import javax.inject.Inject
 
 class ProcessImageUseCase @Inject constructor(
