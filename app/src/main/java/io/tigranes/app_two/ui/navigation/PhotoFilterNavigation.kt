@@ -2,9 +2,9 @@ package io.tigranes.app_two.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.tigranes.app_two.ui.screens.CameraScreen
@@ -22,11 +22,11 @@ fun PhotoFilterNavigation(
         composable(route = PhotoFilterScreen.Home.route) {
             HomeScreen(navController = navController)
         }
-        
+
         composable(route = PhotoFilterScreen.Camera.route) {
             CameraScreen(navController = navController)
         }
-        
+
         composable(
             route = PhotoFilterScreen.Editor.route + "?imageUri={imageUri}",
             arguments = listOf(

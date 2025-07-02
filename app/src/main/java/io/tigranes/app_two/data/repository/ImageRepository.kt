@@ -6,11 +6,10 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import io.tigranes.app_two.data.base.BaseRepository
 import io.tigranes.app_two.di.IoDispatcher
-import io.tigranes.app_two.util.Constants
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.max
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 
 interface ImageRepository {
     suspend fun loadBitmap(uri: Uri): Result<Bitmap>
@@ -35,36 +34,38 @@ class ImageRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun loadBitmapWithMaxSize(uri: Uri, maxSize: Int): Result<Bitmap> = 
-        withContext(ioDispatcher) {
-            try {
-                // First, get image dimensions without loading the full image
-                val options = BitmapFactory.Options().apply {
-                    inJustDecodeBounds = true
-                }
-                
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream, null, options)
-                }
-                
-                // Calculate sample size to reduce memory usage
-                val sampleSize = calculateSampleSize(options.outWidth, options.outHeight, maxSize)
-                
-                // Load the bitmap with the calculated sample size
-                val scaledOptions = BitmapFactory.Options().apply {
-                    inSampleSize = sampleSize
-                    inJustDecodeBounds = false
-                }
-                
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val bitmap = BitmapFactory.decodeStream(inputStream, null, scaledOptions)
-                        ?: throw Exception("Failed to decode image")
-                    Result.success(bitmap)
-                } ?: Result.failure(Exception("Failed to open input stream"))
-            } catch (e: Exception) {
-                Result.failure(e)
+    override suspend fun loadBitmapWithMaxSize(
+        uri: Uri,
+        maxSize: Int
+    ): Result<Bitmap> = withContext(ioDispatcher) {
+        try {
+            // First, get image dimensions without loading the full image
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
             }
+
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream, null, options)
+            }
+
+            // Calculate sample size to reduce memory usage
+            val sampleSize = calculateSampleSize(options.outWidth, options.outHeight, maxSize)
+
+            // Load the bitmap with the calculated sample size
+            val scaledOptions = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inJustDecodeBounds = false
+            }
+
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val bitmap = BitmapFactory.decodeStream(inputStream, null, scaledOptions)
+                    ?: throw Exception("Failed to decode image")
+                Result.success(bitmap)
+            } ?: Result.failure(Exception("Failed to open input stream"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     override suspend fun saveBitmap(
         bitmap: Bitmap,
@@ -77,7 +78,7 @@ class ImageRepositoryImpl @Inject constructor(
                 bitmap = bitmap,
                 isPng = isPng
             )
-            
+
             savedUri?.let {
                 Result.success(it)
             } ?: Result.failure(Exception("Failed to save image"))
@@ -89,11 +90,11 @@ class ImageRepositoryImpl @Inject constructor(
     private fun calculateSampleSize(width: Int, height: Int, maxSize: Int): Int {
         var sampleSize = 1
         val maxDimension = max(width, height)
-        
+
         while (maxDimension / sampleSize > maxSize) {
             sampleSize *= 2
         }
-        
+
         return sampleSize
     }
 }

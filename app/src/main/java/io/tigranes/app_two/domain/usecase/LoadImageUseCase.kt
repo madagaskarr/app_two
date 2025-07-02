@@ -17,7 +17,7 @@ class LoadImageUseCase @Inject constructor(
         } else {
             imageRepository.loadBitmap(params.uri)
         }
-        
+
         return result.getOrThrow()
     }
 

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,20 +60,20 @@ fun EditorScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(uiState.savedImageUri) {
         uiState.savedImageUri?.let {
             context.showToast("Image saved successfully!")
             navController.popBackStack(PhotoFilterScreen.Home.route, false)
         }
     }
-    
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             context.showToast(it)
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -130,7 +129,7 @@ fun EditorScreen(
                 } ?: run {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-                
+
                 if (uiState.isLoading || uiState.isApplyingFilter) {
                     Box(
                         modifier = Modifier
@@ -142,7 +141,7 @@ fun EditorScreen(
                     }
                 }
             }
-            
+
             // Filter intensity slider
             if (uiState.selectedFilterIndex >= 0) {
                 Column(
@@ -165,7 +164,7 @@ fun EditorScreen(
                     )
                 }
             }
-            
+
             // Filter selection
             Row(
                 modifier = Modifier
@@ -175,7 +174,7 @@ fun EditorScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 // Original
                 FilterItem(
                     name = "Original",
@@ -184,7 +183,7 @@ fun EditorScreen(
                         viewModel.resetToOriginal()
                     }
                 )
-                
+
                 // Filters
                 filters.forEachIndexed { index, filter ->
                     FilterItem(
@@ -195,7 +194,7 @@ fun EditorScreen(
                         }
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
@@ -212,8 +211,11 @@ private fun FilterItem(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                }
             )
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -233,8 +235,11 @@ private fun FilterItem(
             Text(
                 text = name,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         }
     }

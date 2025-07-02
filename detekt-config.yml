@@ -16,7 +16,7 @@ config:
   validation: true
   warningsAsErrors: false
   checkExhaustiveness: false
-  excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+  excludes: ''
 
 complexity:
   active: true
@@ -62,14 +62,14 @@ complexity:
     active: false
   StringLiteralDuplication:
     active: false
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     threshold: 3
     ignoreAnnotation: true
     excludeStringsWithLessThan5Characters: true
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     thresholdInFiles: 11
     thresholdInClasses: 11
     thresholdInInterfaces: 11
@@ -168,7 +168,7 @@ exceptions:
     active: false
   ThrowingExceptionsWithoutMessageOrCause:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     exceptions:
       - 'ArrayIndexOutOfBoundsException'
       - 'Exception'
@@ -183,7 +183,7 @@ exceptions:
     active: true
   TooGenericExceptionCaught:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     exceptionNames:
       - 'ArrayIndexOutOfBoundsException'
       - 'Error'
@@ -229,7 +229,7 @@ naming:
     minimumFunctionNameLength: 3
   FunctionNaming:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
     excludeClassPattern: '$^'
     ignoreAnnotated: ['Composable']
@@ -289,10 +289,10 @@ performance:
     threshold: 3
   ForEachOnRange:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
   SpreadOperator:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
   UnnecessaryPartOfBinaryExpression:
     active: false
   UnnecessaryTemporaryInstantiation:
@@ -359,7 +359,7 @@ potential-bugs:
     active: true
   LateinitUsage:
     active: false
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     ignoreOnClassesPattern: ''
   MapGetWithNotNullAssertionOperator:
     active: true
@@ -384,7 +384,7 @@ potential-bugs:
     active: true
   UnsafeCallOnNullableType:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
   UnsafeCast:
     active: true
   UnusedUnaryOperator:
@@ -629,6 +629,6 @@ style:
     ignoreLateinitVar: false
   WildcardImport:
     active: true
-    excludes: '**/test/**,**/androidTest/**,**/commonTest/**,**/jvmTest/**,**/jsTest/**,**/iosTest/**'
+    excludes: ''
     excludeImports:
       - 'java.util.*'

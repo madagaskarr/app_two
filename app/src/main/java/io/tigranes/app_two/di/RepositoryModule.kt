@@ -13,13 +13,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-    
+
     @Binds
     @Singleton
     abstract fun bindImageRepository(
         imageRepositoryImpl: ImageRepositoryImpl
     ): ImageRepository
-    
+
     @Binds
     @Singleton
     abstract fun bindFilterRepository(

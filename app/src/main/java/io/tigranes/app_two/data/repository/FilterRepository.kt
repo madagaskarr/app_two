@@ -5,9 +5,9 @@ import io.tigranes.app_two.data.base.BaseRepository
 import io.tigranes.app_two.data.filter.FilterManager
 import io.tigranes.app_two.data.filter.FilterType
 import io.tigranes.app_two.di.IoDispatcher
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 interface FilterRepository {
     suspend fun applyFilter(

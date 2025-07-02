@@ -11,11 +11,11 @@ import io.tigranes.app_two.domain.usecase.LoadImageUseCase
 import io.tigranes.app_two.domain.usecase.SaveImageUseCase
 import io.tigranes.app_two.ui.base.BaseViewModel
 import io.tigranes.app_two.util.Constants
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
@@ -43,7 +43,7 @@ class EditorViewModel @Inject constructor(
     private fun loadImage(uri: Uri) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            
+
             loadImageUseCase(LoadImageUseCase.Params(uri)).fold(
                 onSuccess = { bitmap ->
                     _uiState.value = _uiState.value.copy(
@@ -64,17 +64,17 @@ class EditorViewModel @Inject constructor(
 
     fun applyFilter(filterIndex: Int) {
         val originalBitmap = _uiState.value.originalBitmap ?: return
-        
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 selectedFilterIndex = filterIndex,
                 isApplyingFilter = true
             )
-            
+
             try {
                 val filterType = FilterType.values()[filterIndex]
                 val intensity = _uiState.value.filterIntensity
-                
+
                 applyFilterUseCase(
                     ApplyFilterUseCase.Params(
                         bitmap = originalBitmap,
@@ -106,7 +106,7 @@ class EditorViewModel @Inject constructor(
 
     fun updateFilterIntensity(intensity: Float) {
         _uiState.value = _uiState.value.copy(filterIntensity = intensity)
-        
+
         // Reapply filter with new intensity
         val currentFilter = _uiState.value.selectedFilterIndex
         if (currentFilter >= 0) {
@@ -125,9 +125,9 @@ class EditorViewModel @Inject constructor(
     fun saveImage() {
         viewModelScope.launch {
             val bitmap = _uiState.value.currentBitmap ?: return@launch
-            
+
             _uiState.value = _uiState.value.copy(isSaving = true)
-            
+
             saveImageUseCase(SaveImageUseCase.Params(bitmap)).fold(
                 onSuccess = { uri ->
                     _uiState.value = _uiState.value.copy(

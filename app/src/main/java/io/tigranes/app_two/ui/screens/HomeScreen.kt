@@ -44,7 +44,7 @@ fun HomeScreen(
         onResult = { uri ->
             uri?.let {
                 // Navigate to editor with the selected image
-                navController.navigate("editor?imageUri=${it}")
+                navController.navigate("editor?imageUri=$it")
             }
         }
     )
@@ -58,23 +58,23 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
-            
+
             Text(
                 text = "PhotoFilter",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            
+
             Text(
                 text = "Choose an image to edit",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(64.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -86,11 +86,13 @@ fun HomeScreen(
                     description = "Pick from your photos",
                     onClick = {
                         photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
                     }
                 )
-                
+
                 OptionCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.CameraAlt,
@@ -101,9 +103,9 @@ fun HomeScreen(
                     }
                 )
             }
-            
+
             Spacer(modifier = Modifier.weight(1f))
-            
+
             Text(
                 text = "100% Offline • No Internet Required",
                 style = MaterialTheme.typography.bodySmall,
@@ -154,15 +156,15 @@ private fun OptionCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,

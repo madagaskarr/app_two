@@ -1,0 +1,3 @@
+[*.{kt,kts}]
+# Disable package name underscore check
+ktlint_standard_package-name = disabled
